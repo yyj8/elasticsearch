@@ -286,7 +286,7 @@ class VersionPropertiesLoader {
       }
       elasticsearch += "-" + qualifier
     }
-    final String buildSnapshotSystemProperty = systemProperties.getProperty("build.snapshot", "true");
+    final String buildSnapshotSystemProperty = systemProperties.getProperty("build.snapshot", "false");
     switch (buildSnapshotSystemProperty) {
       case "true":
         elasticsearch += "-SNAPSHOT"

@@ -71,6 +71,7 @@ http.port: 9202
 discovery.seed_hosts: ["127.0.0.1:9300", "127.0.0.1:9301","127.0.0.1:9302"]
 cluster.initial_master_nodes: ["node-1", "node-2", "node-3"]
 path.repo: ["D:\\workspace\\github\\yyj8\\elasticsearch\\data\\snapshot_data"]
+node.roles: [master,data]
 #discovery.seed_hosts: ["host1", "host2"]
 #
 # Bootstrap the cluster using an initial set of master-eligible nodes:
