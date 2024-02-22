@@ -359,6 +359,7 @@ import org.elasticsearch.rest.action.cat.RestIndicesAction;
 import org.elasticsearch.rest.action.cat.RestMasterAction;
 import org.elasticsearch.rest.action.cat.RestNodeAttrsAction;
 import org.elasticsearch.rest.action.cat.RestNodesAction;
+import org.elasticsearch.rest.action.cat.RestTestAction;
 import org.elasticsearch.rest.action.cat.RestPluginsAction;
 import org.elasticsearch.rest.action.cat.RestRepositoriesAction;
 import org.elasticsearch.rest.action.cat.RestSegmentsAction;
@@ -776,6 +777,7 @@ public class ActionModule extends AbstractModule {
         registerHandler.accept(new RestShardsAction());
         registerHandler.accept(new RestMasterAction());
         registerHandler.accept(new RestNodesAction());
+        registerHandler.accept(new RestTestAction());
         registerHandler.accept(new RestTasksAction(nodesInCluster));
         registerHandler.accept(new RestIndicesAction());
         registerHandler.accept(new RestSegmentsAction());

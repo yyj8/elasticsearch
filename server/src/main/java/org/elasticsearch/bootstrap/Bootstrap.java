@@ -315,7 +315,7 @@ final class Bootstrap {
 
     private void start() throws NodeValidationException {
         node.start();
-        keepAliveThread.start();
+        keepAliveThread.start();//启动一个线程，让es的进程一直等待，别退出，没有这个的话服务启动逻辑执行完就退出了
     }
 
     static void stop() throws IOException {

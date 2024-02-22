@@ -890,7 +890,7 @@ public class Node implements Closeable {
 
         injector.getInstance(HttpServerTransport.class).start();
 
-        if (WRITE_PORTS_FILE_SETTING.get(settings())) {
+        if (WRITE_PORTS_FILE_SETTING.get(settings())) {//默认false，配置：node.portsfile=true将进入if分支
             TransportService transport = injector.getInstance(TransportService.class);
             writePortsFile("transport", transport.boundAddress());
             HttpServerTransport http = injector.getInstance(HttpServerTransport.class);

@@ -7,6 +7,7 @@ path.data: D:\workspace\github\yyj8\elasticsearch\data\es1
 path.logs: D:\workspace\github\yyj8\elasticsearch\logs
 http.port: 9200
 transport.port: 9300
+node.portsfile: true
 discovery.seed_hosts: ["127.0.0.1:9300", "127.0.0.1:9301","127.0.0.1:9302"]
 cluster.initial_master_nodes: ["node-1", "node-2", "node-3"]
 path.repo: ["D:\\workspace\\github\\yyj8\\elasticsearch\\data\\snapshot_data"]
