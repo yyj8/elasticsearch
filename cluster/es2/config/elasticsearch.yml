@@ -11,3 +11,33 @@ discovery.seed_hosts: ["127.0.0.1:9300", "127.0.0.1:9301","127.0.0.1:9302"]
 cluster.initial_master_nodes: ["node-1", "node-2", "node-3"]
 path.repo: ["D:\\workspace\\github\\yyj8\\elasticsearch\\data\\snapshot_data"]
 node.roles: [master,data]
+bootstrap.memory_lock: true
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+search.max_open_scroll_context: 50000
+search.max_buckets: 50000000
+indices.fielddata.cache.size: 12%
+
+indices.breaker.fielddata.limit: 40%
+indices.breaker.request.limit: 60%
+indices.breaker.total.limit: 90%
+indices.breaker.total.use_real_memory: true
+
+indices.memory.index_buffer_size: 7%
+indices.queries.cache.size: 10%
+cluster.routing.allocation.node_concurrent_recoveries: 10
+cluster.routing.allocation.node_initial_primaries_recoveries: 10
+indices.recovery.max_concurrent_file_chunks: 5
+indices.recovery.max_bytes_per_sec: 512mb
+cluster.routing.allocation.same_shard.host: true
+cluster.routing.allocation.disk.watermark.low: 50gb
+cluster.routing.allocation.disk.watermark.high: 20gb
+cluster.routing.allocation.disk.watermark.flood_stage: 10gb
+cluster.info.update.interval: 5m
+
+action.destructive_requires_name: true
+
+cluster.fault_detection.follower_check.interval: 10s
+cluster.fault_detection.follower_check.timeout: 60s
+cluster.fault_detection.follower_check.retry_count: 3
+gateway.auto_import_dangling_indices: yes
