@@ -1,7 +1,9 @@
 cluster.name: es-cluster-idea
 #禁用security
 xpack.ml.enabled: false
-xpack.security.enabled: false # 禁用 X-Pack 提供的安全认证功能，方便测试
+xpack.security.enabled: true # 禁用 X-Pack 提供的安全认证功能，方便测试
+xpack.security.transport.ssl.enabled: false
+xpack.security.http.ssl.enabled: false
 node.name: node-1
 path.data: D:\workspace\github\yyj8\elasticsearch\data\es1
 path.logs: D:\workspace\github\yyj8\elasticsearch\logs

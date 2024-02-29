@@ -113,6 +113,11 @@ public class SetupPasswordTool extends LoggingAwareMultiCommand {
     }
 
     public static void main(String[] args) throws Exception {
+        System.setProperty("es.path.home","D:\\workspace\\github\\yyj8\\elasticsearch\\cluster\\es1");
+        System.setProperty("es.path.conf","D:\\workspace\\github\\yyj8\\elasticsearch\\cluster\\es1\\config");
+        System.setProperty("log4j2.disable.jmx", "true"); // 禁用 log4j2 的 JMX 监控，避免报错
+        // 设置 Java 的安全策略
+        System.setProperty("java.security.policy","D:\\workspace\\github\\yyj8\\elasticsearch\\cluster\\es1\\config\\java.policy");
         exit(new SetupPasswordTool().main(args, Terminal.DEFAULT));
     }
 
@@ -184,15 +189,15 @@ public class SetupPasswordTool extends LoggingAwareMultiCommand {
             checkElasticKeystorePasswordValid(terminal, env);
             checkClusterHealth(terminal);
 
-            if (shouldPrompt) {
-                terminal.println("Initiating the setup of passwords for reserved users " + String.join(",", USERS) + ".");
-                terminal.println("You will be prompted to enter passwords as the process progresses.");
-                boolean shouldContinue = terminal.promptYesNo("Please confirm that you would like to continue", false);
-                terminal.println("\n");
-                if (shouldContinue == false) {
-                    throw new UserException(ExitCodes.OK, "User cancelled operation");
-                }
-            }
+//            if (shouldPrompt) {
+//                terminal.println("Initiating the setup of passwords for reserved users " + String.join(",", USERS) + ".");
+//                terminal.println("You will be prompted to enter passwords as the process progresses.");
+//                boolean shouldContinue = terminal.promptYesNo("Please confirm that you would like to continue", false);
+//                terminal.println("\n");
+//                if (shouldContinue == false) {
+//                    throw new UserException(ExitCodes.OK, "User cancelled operation");
+//                }
+//            }
 
             changePasswords(user -> promptForPassword(terminal, user),
                     (user, password) -> changedPasswordCallback(terminal, user, password), terminal);
