@@ -189,15 +189,15 @@ public class SetupPasswordTool extends LoggingAwareMultiCommand {
             checkElasticKeystorePasswordValid(terminal, env);
             checkClusterHealth(terminal);
 
-//            if (shouldPrompt) {
-//                terminal.println("Initiating the setup of passwords for reserved users " + String.join(",", USERS) + ".");
-//                terminal.println("You will be prompted to enter passwords as the process progresses.");
-//                boolean shouldContinue = terminal.promptYesNo("Please confirm that you would like to continue", false);
-//                terminal.println("\n");
-//                if (shouldContinue == false) {
-//                    throw new UserException(ExitCodes.OK, "User cancelled operation");
-//                }
-//            }
+            if (shouldPrompt) {
+                terminal.println("Initiating the setup of passwords for reserved users " + String.join(",", USERS) + ".");
+                terminal.println("You will be prompted to enter passwords as the process progresses.");
+                boolean shouldContinue = terminal.promptYesNo("Please confirm that you would like to continue", false);
+                terminal.println("\n");
+                if (shouldContinue == false) {
+                    throw new UserException(ExitCodes.OK, "User cancelled operation");
+                }
+            }
 
             changePasswords(user -> promptForPassword(terminal, user),
                     (user, password) -> changedPasswordCallback(terminal, user, password), terminal);

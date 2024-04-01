@@ -269,7 +269,7 @@ public class MasterService extends AbstractLifecycleComponent {
 
         // indefinitely wait for publication to complete
         try {
-            FutureUtils.get(fut);
+            FutureUtils.get(fut);//阻塞，直到更新请求完成
             onPublicationSuccess(clusterChangedEvent, taskOutputs);
         } catch (Exception e) {
             onPublicationFailed(clusterChangedEvent, taskOutputs, startTimeMillis, e);

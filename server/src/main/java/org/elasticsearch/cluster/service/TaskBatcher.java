@@ -58,6 +58,7 @@ public abstract class TaskBatcher {
             return;
         }
         final BatchedTask firstTask = tasks.get(0);
+        //同一个批次中所有的batchingKey应该是相同的才行，否则报错
         assert tasks.stream().allMatch(t -> t.batchingKey == firstTask.batchingKey) :
             "tasks submitted in a batch should share the same batching key: " + tasks;
         // convert to an identity map to check for dups based on task identity
@@ -67,9 +68,10 @@ public abstract class TaskBatcher {
             (a, b) -> { throw new IllegalStateException("cannot add duplicate task: " + a); },
             IdentityHashMap::new));
 
-        synchronized (tasksPerBatchingKey) {
+        synchronized (tasksPerBatchingKey) {//这里是同步单线程操作
             LinkedHashSet<BatchedTask> existingTasks = tasksPerBatchingKey.computeIfAbsent(firstTask.batchingKey,
                 k -> new LinkedHashSet<>(tasks.size()));
+            //如果existingTasks不为空，说明batchingKey这个批次key已经有更新任务在队列了，重复提交的就抛出异常
             for (BatchedTask existing : existingTasks) {
                 // check that there won't be two tasks with the same identity for the same batching key
                 BatchedTask duplicateTask = tasksIdentity.get(existing.getTask());
@@ -184,7 +186,7 @@ public abstract class TaskBatcher {
         }
 
         @Override
-        public void run() {
+        public void run() {//正在执行更新任务在个线程方法这里
             runIfNotProcessed(this);
         }
 

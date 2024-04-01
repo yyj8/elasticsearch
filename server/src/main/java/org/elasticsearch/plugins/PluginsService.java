@@ -598,7 +598,8 @@ public class PluginsService implements ReportingService<PluginsAndModules> {
             }
 
             urls.addAll(bundle.urls);
-            JarHell.checkJarHell(urls, logger::debug); // check jarhell of each extended plugin against this plugin
+            //这个函数可以降低很多服务启动耗时
+//            JarHell.checkJarHell(urls, logger::debug); // check jarhell of each extended plugin against this plugin
             transitiveUrls.put(bundle.plugin.getName(), urls);
 
             // check we don't have conflicting codebases with core
@@ -610,7 +611,8 @@ public class PluginsService implements ReportingService<PluginsAndModules> {
             // check we don't have conflicting classes
             Set<URL> union = new HashSet<>(classpath);
             union.addAll(bundle.urls);
-            JarHell.checkJarHell(union, logger::debug);
+            //这个函数可以降低很多服务启动耗时
+//            JarHell.checkJarHell(union, logger::debug);
         } catch (Exception e) {
             throw new IllegalStateException("failed to load plugin " + bundle.plugin.getName() + " due to jar hell", e);
         }

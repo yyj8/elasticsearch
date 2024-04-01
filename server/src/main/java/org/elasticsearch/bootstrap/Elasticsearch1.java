@@ -74,6 +74,7 @@ class Elasticsearch1 extends EnvironmentAwareCommand {
      */
     public static void main(final String[] args) throws Exception {
 
+        long start = System.currentTimeMillis();
         System.setProperty("es.path.home","D:\\workspace\\github\\yyj8\\elasticsearch\\cluster\\es1");
         System.setProperty("es.path.conf","D:\\workspace\\github\\yyj8\\elasticsearch\\cluster\\es1\\config");
         System.setProperty("log4j2.disable.jmx", "true"); // 禁用 log4j2 的 JMX 监控，避免报错
@@ -97,6 +98,8 @@ class Elasticsearch1 extends EnvironmentAwareCommand {
         LogConfigurator.registerErrorListener();
         final Elasticsearch1 elasticsearch = new Elasticsearch1();
         int status = main(args, elasticsearch, Terminal.DEFAULT);
+        long end = System.currentTimeMillis();
+        System.out.println("Elasticsearch main方法执行耗时："+(end-start));
         if (status != ExitCodes.OK) {
             final String basePath = System.getProperty("es.logs.base_path");
             // It's possible to fail before logging has been configured, in which case there's no point

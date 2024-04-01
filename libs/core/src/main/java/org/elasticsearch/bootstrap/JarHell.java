@@ -138,7 +138,7 @@ public class JarHell {
                     // Eclipse adds this to the classpath when running unit tests...
                     continue;
                 }
-                URL url = PathUtils.get(element).toUri().toURL();               
+                URL url = PathUtils.get(element).toUri().toURL();
                 // junit4.childvm.count
                 if (urlElements.add(url) == false && element.endsWith(".jar")) {
                     throw new IllegalStateException("jar hell!" + System.lineSeparator() +
@@ -204,19 +204,19 @@ public class JarHell {
 
                 // don't try and walk class or resource directories that don't exist
                 // gradle will add these to the classpath even if they never get created
-                if (Files.exists(root)) {
-                    Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
-                        @Override
-                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                            String entry = root.relativize(file).toString();
-                            if (entry.endsWith(".class")) {
-                                // normalize with the os separator, remove '.class'
-                                entry = entry.replace(sep, ".").substring(0, entry.length() - ".class".length());
-                                checkClass(clazzes, entry, path);
-                            }
-                            return super.visitFile(file, attrs);
-                        }
-                    });
+                if (Files.exists(root)) {//注释掉，可以缩短服务启动时间
+//                    Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+//                        @Override
+//                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+//                            String entry = root.relativize(file).toString();
+//                            if (entry.endsWith(".class")) {
+//                                // normalize with the os separator, remove '.class'
+//                                entry = entry.replace(sep, ".").substring(0, entry.length() - ".class".length());
+//                                checkClass(clazzes, entry, path);
+//                            }
+//                            return super.visitFile(file, attrs);
+//                        }
+//                    });
                 }
             }
         }
