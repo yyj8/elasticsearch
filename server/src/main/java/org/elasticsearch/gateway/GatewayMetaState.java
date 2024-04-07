@@ -529,16 +529,16 @@ public class GatewayMetaState implements Closeable {
         @Override
         public void setLastAcceptedState(ClusterState clusterState) {
             try {
-                if (writeNextStateFully) {
+                if (writeNextStateFully) {//全量写元数据
                     getWriterSafe().writeFullStateAndCommit(currentTerm, clusterState);
                     writeNextStateFully = false;
                 } else {
-                    if (clusterState.term() != lastAcceptedState.term()) {
+                    if (clusterState.term() != lastAcceptedState.term()) {//全量写元数据
                         assert clusterState.term() > lastAcceptedState.term() : clusterState.term() + " vs " + lastAcceptedState.term();
                         // In a new currentTerm, we cannot compare the persisted metadata's lastAcceptedVersion to those in the new state,
                         // so it's simplest to write everything again.
                         getWriterSafe().writeFullStateAndCommit(currentTerm, clusterState);
-                    } else {
+                    } else {//增量写元数据
                         // Within the same currentTerm, we _can_ use metadata versions to skip unnecessary writing.
                         getWriterSafe().writeIncrementalStateAndCommit(currentTerm, lastAcceptedState, clusterState);
                     }

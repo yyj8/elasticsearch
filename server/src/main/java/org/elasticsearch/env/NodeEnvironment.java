@@ -313,7 +313,7 @@ public final class NodeEnvironment  implements Closeable {
             maybeLogHeapDetails();
 
             applySegmentInfosTrace(settings);
-            assertCanWrite();
+            assertCanWrite();//检查是否有权限写数据目录下的各级子目录
 
             if (DiscoveryNode.isMasterNode(settings) || DiscoveryNode.isDataNode(settings)) {
                 ensureAtomicMoveSupported(nodePaths);

@@ -167,7 +167,7 @@ public class PublicationTransportHandler {
             in = new NamedWriteableAwareStreamInput(in, namedWriteableRegistry);
             in.setVersion(request.version());
             // If true we received full cluster state - otherwise diffs
-            if (in.readBoolean()) {
+            if (in.readBoolean()) {//全量集群元数据
                 final ClusterState incomingState;
                 // Close early to release resources used by the de-compression as early as possible
                 try (StreamInput input = in) {
@@ -182,7 +182,7 @@ public class PublicationTransportHandler {
                 final PublishWithJoinResponse response = acceptState(incomingState);
                 lastSeenClusterState.set(incomingState);
                 return response;
-            } else {
+            } else {//增量集群元数据
                 final ClusterState lastSeen = lastSeenClusterState.get();
                 if (lastSeen == null) {
                     logger.debug("received diff for but don't have any local cluster state - requesting full state");
@@ -281,13 +281,14 @@ public class PublicationTransportHandler {
             discoveryNodes = clusterChangedEvent.state().nodes();
             newState = clusterChangedEvent.state();
             previousState = clusterChangedEvent.previousState();
-            sendFullVersion = previousState.getBlocks().disableStatePersistence();
+            sendFullVersion = previousState.getBlocks().disableStatePersistence();//获取是否有阻塞的操作
         }
 
         void buildDiffAndSerializeStates() {
             Diff<ClusterState> diff = null;
+            //需要注意的是，下面node.getVersion()其实获取的是当前目标es节点服务启动的版本，比如7.10.2,7.10.3这种，索引如果整个es集群使用同一个es版本，那么这个version就相同
             for (DiscoveryNode node : discoveryNodes) {
-                try {
+                try {//如果是发送全量为true，或者前面异常元数据同步没有包含目标节点，那么就执行全量同步逻辑
                     if (sendFullVersion || previousState.nodes().nodeExists(node) == false) {
                         if (serializedStates.containsKey(node.getVersion()) == false) {
                             serializedStates.put(node.getVersion(), serializeFullClusterState(newState, node.getVersion()));
@@ -297,7 +298,7 @@ public class PublicationTransportHandler {
                         if (diff == null) {
                             diff = newState.diff(previousState);
                         }
-                        if (serializedDiffs.containsKey(node.getVersion()) == false) {
+                        if (serializedDiffs.containsKey(node.getVersion()) == false) {//下面的序列化会压缩数据
                             final BytesReference serializedDiff = serializeDiffClusterState(diff, node.getVersion());
                             serializedDiffs.put(node.getVersion(), serializedDiff);
                             logger.trace("serialized cluster state diff for version [{}] in for node version [{}] with size [{}]",
@@ -337,6 +338,7 @@ public class PublicationTransportHandler {
             } else {
                 responseActionListener = listener;
             }
+            //目标节点是否在前面一个版本的元数据节点列表，如果不在执行全量同步逻辑，如果在执行增量同步逻辑
             if (sendFullVersion || previousState.nodes().nodeExists(destination) == false) {
                 logger.trace("sending full cluster state version [{}] to [{}]", newState.version(), destination);
                 sendFullClusterState(destination, responseActionListener);

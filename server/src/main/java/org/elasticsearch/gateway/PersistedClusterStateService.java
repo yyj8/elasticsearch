@@ -316,7 +316,7 @@ public class PersistedClusterStateService {
     /**
      * Loads the best available on-disk cluster state. Returns {@link OnDiskState#NO_ON_DISK_STATE} if no such state was found.
      */
-    public OnDiskState loadBestOnDiskState() throws IOException {
+    public OnDiskState loadBestOnDiskState() throws IOException {//加载磁盘上的state文件，这里面存放了元数据信息
         String committedClusterUuid = null;
         Path committedClusterUuidPath = null;
         OnDiskState bestOnDiskState = OnDiskState.NO_ON_DISK_STATE;
@@ -325,7 +325,7 @@ public class PersistedClusterStateService {
         // We use a write-all-read-one strategy: metadata is written to every data path when accepting it, which means it is mostly
         // sufficient to read _any_ copy. "Mostly" sufficient because the user can change the set of data paths when restarting, and may
         // add a data path containing a stale copy of the metadata. We deal with this by using the freshest copy we can find.
-        for (final Path dataPath : dataPaths) {
+        for (final Path dataPath : dataPaths) {//遍历所有目录，把最新的磁盘上的state元数据赋值给【maxCurrentTermOnDiskState】
             final Path indexPath = dataPath.resolve(METADATA_DIRECTORY_NAME);
             if (Files.exists(indexPath)) {
                 try (Directory directory = createDirectory(indexPath);
@@ -354,7 +354,7 @@ public class PersistedClusterStateService {
 
                     long acceptedTerm = onDiskState.metadata.coordinationMetadata().term();
                     long maxAcceptedTerm = bestOnDiskState.metadata.coordinationMetadata().term();
-                    if (bestOnDiskState.empty()
+                    if (bestOnDiskState.empty()//通过比较，获取最新的state文件内容
                         || acceptedTerm > maxAcceptedTerm
                         || (acceptedTerm == maxAcceptedTerm
                             && (onDiskState.lastAcceptedVersion > bestOnDiskState.lastAcceptedVersion
@@ -368,7 +368,7 @@ public class PersistedClusterStateService {
             }
         }
 
-        if (bestOnDiskState.currentTerm != maxCurrentTermOnDiskState.currentTerm) {
+        if (bestOnDiskState.currentTerm != maxCurrentTermOnDiskState.currentTerm) {//状态不一致，抛出异常
             throw new IllegalStateException("inconsistent terms found: best state is from [" + bestOnDiskState.dataPath +
                 "] in term [" + bestOnDiskState.currentTerm + "] but there is a stale state in [" + maxCurrentTermOnDiskState.dataPath +
                 "] with greater term [" + maxCurrentTermOnDiskState.currentTerm + "]");
@@ -595,15 +595,16 @@ public class PersistedClusterStateService {
         void writeIncrementalStateAndCommit(long currentTerm, ClusterState previousClusterState,
                                             ClusterState clusterState) throws IOException {
             ensureOpen();
-            ensureFullStateWritten();
+            ensureFullStateWritten();//确保先写过全量才能写增量
 
             try {
                 final long startTimeMillis = relativeTimeMillisSupplier.getAsLong();
+                //移除旧文档和非必要文档，添加新文档
                 final WriterStats stats = updateMetadata(previousClusterState.metadata(), clusterState.metadata());
-                commit(currentTerm, clusterState.version());
+                commit(currentTerm, clusterState.version());//提交里面涉及2阶段提交，先precommit，然后在commit
                 final long durationMillis = relativeTimeMillisSupplier.getAsLong() - startTimeMillis;
                 final TimeValue finalSlowWriteLoggingThreshold = slowWriteLoggingThresholdSupplier.get();
-                if (durationMillis >= finalSlowWriteLoggingThreshold.getMillis()) {
+                if (durationMillis >= finalSlowWriteLoggingThreshold.getMillis()) {//慢写日志临界值默认10s
                     logger.warn("writing cluster state took [{}ms] which is above the warn threshold of [{}]; " +
                             "wrote global metadata [{}] and metadata for [{}] indices and skipped [{}] unchanged indices",
                         durationMillis, finalSlowWriteLoggingThreshold, stats.globalMetaUpdated, stats.numIndicesUpdated,

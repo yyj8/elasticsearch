@@ -56,7 +56,7 @@ public class ClusterBlocks extends AbstractDiffable<ClusterBlocks> {
     private final EnumMap<ClusterBlockLevel, ImmutableLevelHolder> levelHolders;
 
     ClusterBlocks(Set<ClusterBlock> global, ImmutableOpenMap<String, Set<ClusterBlock>> indicesBlocks) {
-        this.global = global;
+        this.global = global;//赋值全局阻塞项
         this.indicesBlocks = indicesBlocks;
         levelHolders = generateLevelHolders(global, indicesBlocks);
     }
@@ -106,7 +106,8 @@ public class ClusterBlocks extends AbstractDiffable<ClusterBlocks> {
      * Returns {@code true} if one of the global blocks as its disable state persistence flag set.
      */
     public boolean disableStatePersistence() {
-        for (ClusterBlock clusterBlock : global) {
+        for (ClusterBlock clusterBlock : global) {//在没有阻塞操作以及增量同步的时候，这里的global是为空的
+            System.out.println(">>>>>>>>>>>>clusterBlock="+clusterBlock+", disableStatePersistence="+clusterBlock.disableStatePersistence());
             if (clusterBlock.disableStatePersistence()) {
                 return true;
             }
