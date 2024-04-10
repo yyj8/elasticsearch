@@ -4,15 +4,15 @@ xpack.ml.enabled: false
 xpack.security.enabled: false # 禁用 X-Pack 提供的安全认证功能，方便测试
 xpack.security.transport.ssl.enabled: false
 xpack.security.http.ssl.enabled: false
-node.name: node-2
-path.data: D:\workspace\github\yyj8\elasticsearch\data\es2
+node.name: node-4
+path.data: D:\workspace\github\yyj8\elasticsearch\data\es4
 path.logs: D:\workspace\github\yyj8\elasticsearch\logs
-http.port: 9201
-transport.port: 9301
+http.port: 9203
+transport.port: 9303
 discovery.seed_hosts: ["127.0.0.1:9300", "127.0.0.1:9301","127.0.0.1:9302"]
 cluster.initial_master_nodes: ["node-1", "node-2", "node-3"]
 #path.repo: ["D:\\workspace\\github\\yyj8\\elasticsearch\\data\\snapshot_data"]
-node.roles: [master]
+node.roles: [data]
 bootstrap.memory_lock: true
 #http.cors.enabled: true
 #http.cors.allow-origin: "*"
