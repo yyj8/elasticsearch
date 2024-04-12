@@ -123,8 +123,8 @@ public class FollowersChecker {
             NodesFaultDetection.PING_ACTION_NAME, Names.SAME, false, false, NodesFaultDetection.PingRequest::new,
             (request, channel, task) -> // TODO: check that we're a follower of the requesting node?
                 channel.sendResponse(new NodesFaultDetection.PingResponse()));
-        transportService.addConnectionListener(new TransportConnectionListener() {
-            @Override
+        transportService.addConnectionListener(new TransportConnectionListener() {//注册连接相关监听
+            @Override//在ClusterConnectionManager类的connectToNode方法的internalOpenConnection函数调用的内部回调函数中，注册的连接关闭监听调用
             public void onNodeDisconnected(DiscoveryNode node, Transport.Connection connection) {
                 handleDisconnectedNode(node);
             }
@@ -384,6 +384,8 @@ public class FollowersChecker {
                         faultyNodes.add(discoveryNode);
                         followerCheckers.remove(discoveryNode);
                     }
+                    //调用Coordinator的removeNode方法，在这里面提交节点离开请求：masterService.submitStateUpdateTask("node-left"
+                    //经过几轮流转会调用到NodeRemovalClusterStateTaskExecutor的execute方法
                     onNodeFailure.accept(discoveryNode, reason);
                 }
 

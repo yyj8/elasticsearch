@@ -625,7 +625,7 @@ public class ShardStateAction {
             assert tasksToBeApplied.size() >= shardRoutingsToBeApplied.size();
 
             ClusterState maybeUpdatedState = currentState;
-            try {
+            try {//节点启动都会调用，应用当前启动节点上的分片进行分配
                 maybeUpdatedState = allocationService.applyStartedShards(currentState, shardRoutingsToBeApplied);
                 builder.successes(tasksToBeApplied);
             } catch (Exception e) {

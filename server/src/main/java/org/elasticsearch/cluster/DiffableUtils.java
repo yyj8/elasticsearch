@@ -249,7 +249,6 @@ public final class DiffableUtils {
                     deletes.add(key.value);
                 }
             }
-
             for (ObjectObjectCursor<K, T> partIter : after) {
                 T beforePart = before.get(partIter.key);
                 if (beforePart == null) {

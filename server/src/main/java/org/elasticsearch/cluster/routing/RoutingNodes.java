@@ -419,7 +419,7 @@ public class RoutingNodes implements Iterable<RoutingNode> {
 
     /**
      * Moves a shard from unassigned to initialize state
-     *
+     * 移动一个分片从未分配状态到初始化状态
      * @param existingAllocationId allocation id to use. If null, a fresh allocation id is generated.
      * @return                     the initialized shard
      */
@@ -523,7 +523,12 @@ public class RoutingNodes implements Iterable<RoutingNode> {
      * - If shard is a relocating replica, this promotes the replica relocation target to a full initializing replica, removing the
      *   relocation source information. This is possible as peer recovery is always done from the primary.
      * - If shard is a (primary or replica) relocation target, this also clears the relocation information on the source shard.
-     *
+     *应用相关逻辑来处理已取消或失败的碎片。将碎片移动到未分配的位置或完全移除碎片（如果是重定位目标）。
+     * * -如果shard是主要的，那么初始化副本也会失败。
+     * * -如果shard是活动的主副本，这也会将活动副本提升为主副本（如果存在这样的副本）。
+     * * -如果shard是重新定位的主，这也会删除主重新定位目标shard。
+     * * -如果shard是重新定位复制副本，则会将复制副本重新定位目标提升为完全初始化复制副本，从而删除重新定位源信息。这是可能的，因为对等恢复始终从主服务器完成。
+     * * -如果shard是（主或副本）重定位目标，这也会清除源shard上的重定位信息
      */
     public void failShard(Logger logger, ShardRouting failedShard, UnassignedInfo unassignedInfo, IndexMetadata indexMetadata,
                           RoutingChangesObserver routingChangesObserver) {

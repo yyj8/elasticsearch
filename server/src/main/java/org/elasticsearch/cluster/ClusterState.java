@@ -770,9 +770,9 @@ public class ClusterState implements ToXContentFragment, Diffable<ClusterState> 
             toVersion = after.version;
             clusterName = after.clusterName;
             routingTable = after.routingTable.diff(before.routingTable);
-            nodes = after.nodes.diff(before.nodes);
-            metadata = after.metadata.diff(before.metadata);
-            blocks = after.blocks.diff(before.blocks);
+            nodes = after.nodes.diff(before.nodes);//里面没有for循环遍历
+            metadata = after.metadata.diff(before.metadata);//这里面还有多层元数据算差异内容
+            blocks = after.blocks.diff(before.blocks);//里面没有for循环遍历
             customs = DiffableUtils.diff(before.customs, after.customs, DiffableUtils.getStringKeySerializer(), CUSTOM_VALUE_SERIALIZER);
             minimumMasterNodesOnPublishingMaster = after.minimumMasterNodesOnPublishingMaster;
         }

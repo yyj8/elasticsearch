@@ -326,14 +326,14 @@ public class CoordinationState {
 
     /**
      * May be called on receipt of a PublishRequest.
-     *
+     *处理接收到的元数据请求，处理完后响应发送方
      * @param publishRequest The publish request received.
      * @return A PublishResponse which can be sent back to the sender of the PublishRequest.
      * @throws CoordinationStateRejectedException if the arguments were incompatible with the current state of this object.
      */
     public PublishResponse handlePublishRequest(PublishRequest publishRequest) {
         final ClusterState clusterState = publishRequest.getAcceptedState();
-        if (clusterState.term() != getCurrentTerm()) {
+        if (clusterState.term() != getCurrentTerm()) {//传入的term和当前本地term不相等，抛出异常
             logger.debug("handlePublishRequest: ignored publish request due to term mismatch (expected: [{}], actual: [{}])",
                 getCurrentTerm(), clusterState.term());
             throw new CoordinationStateRejectedException("incoming term " + clusterState.term() + " does not match current term " +
@@ -354,7 +354,7 @@ public class CoordinationState {
 
         logger.trace("handlePublishRequest: accepting publish request for version [{}] and term [{}]",
             clusterState.version(), clusterState.term());
-        persistedState.setLastAcceptedState(clusterState);
+        persistedState.setLastAcceptedState(clusterState);//把本地的元数据更新为传入的元数据，并持久化，这里使用的是Lucene的持久化状态
         assert getLastAcceptedState() == clusterState;
 
         return new PublishResponse(clusterState.term(), clusterState.version());

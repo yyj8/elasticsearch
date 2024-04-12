@@ -777,7 +777,7 @@ public class Node implements Closeable {
     /**
      * Start the node. If the node is already started, this method is no-op.
      */
-    public Node start() throws NodeValidationException {
+    public Node start() throws NodeValidationException {//启动ES进程的核心逻辑就在这里面了
         if (!lifecycle.moveToStarted()) {
             return this;
         }
@@ -837,7 +837,7 @@ public class Node implements Closeable {
         }
         // we load the global state here (the persistent part of the cluster state stored on disk) to
         // pass it to the bootstrap checks to allow plugins to enforce certain preconditions based on the recovered state.
-        final Metadata onDiskMetadata = gatewayMetaState.getPersistedState().getLastAcceptedState().metadata();
+        final Metadata onDiskMetadata = gatewayMetaState.getPersistedState().getLastAcceptedState().metadata();//加载磁盘上的state元数据
         assert onDiskMetadata != null : "metadata is null but shouldn't"; // this is never null
         validateNodeBeforeAcceptingRequests(new BootstrapContext(environment, onDiskMetadata), transportService.boundAddress(),
             pluginsService.filterPlugins(Plugin.class).stream()
@@ -850,7 +850,7 @@ public class Node implements Closeable {
         assert clusterService.localNode().equals(localNodeFactory.getNode())
             : "clusterService has a different local node than the factory provided";
         transportService.acceptIncomingRequests();
-        discovery.startInitialJoin();
+        discovery.startInitialJoin();//这里调用Coordinator的实现
         final TimeValue initialStateTimeout = DiscoverySettings.INITIAL_STATE_TIMEOUT_SETTING.get(settings());
         configureNodeAndClusterIdStateListener(clusterService);
 

@@ -46,6 +46,7 @@ public class AllocateUnassignedDecision extends AbstractAllocationDecision {
     /**
      * a map of cached common no/throttle decisions that don't need explanations,
      * this helps prevent unnecessary object allocations for the non-explain API case
+     * 一个不需要解释的缓存的公共无/节流决策的映射，这有助于防止为非解释的API情况分配不必要的对象
      */
     private static final Map<AllocationStatus, AllocateUnassignedDecision> CACHED_DECISIONS;
     static {

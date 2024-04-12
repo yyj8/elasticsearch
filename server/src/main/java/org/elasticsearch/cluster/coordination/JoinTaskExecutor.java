@@ -99,7 +99,7 @@ public class JoinTaskExecutor implements ClusterStateTaskExecutor<JoinTaskExecut
         this.rerouteService = rerouteService;
     }
 
-    @Override
+    @Override//这个方法是在JoinHelper的execute方法的super.execute(currentState, joiningTasks);地方被调用
     public ClusterTasksResult<Task> execute(ClusterState currentState, List<Task> joiningNodes) throws Exception {
         final ClusterTasksResult.Builder<Task> results = ClusterTasksResult.builder();
 
@@ -134,7 +134,7 @@ public class JoinTaskExecutor implements ClusterStateTaskExecutor<JoinTaskExecut
         final boolean enforceMajorVersion = currentState.getBlocks().hasGlobalBlock(STATE_NOT_RECOVERED_BLOCK) == false;
         // processing any joins
         Map<String, String> joiniedNodeNameIds = new HashMap<>();
-        for (final Task joinTask : joiningNodes) {
+        for (final Task joinTask : joiningNodes) {//遍历join的node节点列表
             if (joinTask.isBecomeMasterTask() || joinTask.isFinishElectionTask()) {
                 // noop
             } else if (currentNodes.nodeExistsWithSameRoles(joinTask.node())) {

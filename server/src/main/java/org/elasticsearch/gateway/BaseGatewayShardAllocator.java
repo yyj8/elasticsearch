@@ -55,6 +55,7 @@ public abstract class BaseGatewayShardAllocator {
      */
     public void allocateUnassigned(ShardRouting shardRouting, RoutingAllocation allocation,
                                    ExistingShardsAllocator.UnassignedAllocationHandler unassignedAllocationHandler) {
+        //做分片分配决策，也就是看分片应该被分配到哪个节点
         final AllocateUnassignedDecision allocateUnassignedDecision = makeAllocationDecision(shardRouting, allocation, logger);
 
         if (allocateUnassignedDecision.isDecisionTaken() == false) {

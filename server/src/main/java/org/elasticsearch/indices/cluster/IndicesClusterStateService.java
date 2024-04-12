@@ -213,7 +213,7 @@ public class IndicesClusterStateService extends AbstractLifecycleComponent imple
     }
 
     @Override
-    public synchronized void applyClusterState(final ClusterChangedEvent event) {
+    public synchronized void applyClusterState(final ClusterChangedEvent event) {//应用集群分片状态
         if (!lifecycle.started()) {
             return;
         }
@@ -245,7 +245,7 @@ public class IndicesClusterStateService extends AbstractLifecycleComponent imple
 
         createIndices(state);
 
-        createOrUpdateShards(state);
+        createOrUpdateShards(state);//这里的调用逻辑里面会有启动recovery任务逻辑
     }
 
     /**
@@ -565,10 +565,10 @@ public class IndicesClusterStateService extends AbstractLifecycleComponent imple
                 AllocatedIndex<? extends Shard> indexService = indicesService.indexService(shardId.getIndex());
                 assert indexService != null : "index " + shardId.getIndex() + " should have been created by createIndices";
                 Shard shard = indexService.getShardOrNull(shardId.id());
-                if (shard == null) {
+                if (shard == null) {//判断本地没有的分片就创建
                     assert shardRouting.initializing() : shardRouting + " should have been removed by failMissingShards";
                     createShard(nodes, routingTable, shardRouting, state);
-                } else {
+                } else {//判断本地有的分片就更新
                     updateShard(nodes, shardRouting, shard, routingTable, state);
                 }
             }

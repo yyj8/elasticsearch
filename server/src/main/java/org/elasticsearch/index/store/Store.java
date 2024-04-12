@@ -955,14 +955,14 @@ public class Store extends AbstractIndexShardComponent implements Closeable, Ref
          * Returns a diff between the two snapshots that can be used for recovery. The given snapshot is treated as the
          * recovery target and this snapshot as the source. The returned diff will hold a list of files that are:
          * <ul>
-         * <li>identical: they exist in both snapshots and they can be considered the same ie. they don't need to be recovered</li>
-         * <li>different: they exist in both snapshots but their they are not identical</li>
-         * <li>missing: files that exist in the source but not in the target</li>
+         * <li>identical: they exist in both snapshots and they can be considered the same ie. they don't need to be recovered</li>完全一样的文件不需要迁移
+         * <li>different: they exist in both snapshots but their they are not identical</li>存在，但是不一致
+         * <li>missing: files that exist in the source but not in the target</li>在source存在，target上不存在
          * </ul>
          * This method groups file into per-segment files and per-commit files. A file is treated as
          * identical if and on if all files in it's group are identical. On a per-segment level files for a segment are treated
          * as identical iff:
-         * <ul>
+         * <ul>此方法将文件分组为按段文件和按提交文件。如果文件组中的所有文件都相同，则该文件被视为相同。在每段级别上，段的文件被视为相同的iff
          * <li>all files in this segment have the same checksum</li>
          * <li>all files in this segment have the same length</li>
          * <li>the segments {@code .si} files hashes are byte-identical Note: This is a using a perfect hash function,
@@ -985,9 +985,9 @@ public class Store extends AbstractIndexShardComponent implements Closeable, Ref
          * NOTE: this diff will not contain the {@code segments.gen} file. This file is omitted on recovery.
          */
         public RecoveryDiff recoveryDiff(MetadataSnapshot recoveryTargetSnapshot) {
-            final List<StoreFileMetadata> identical = new ArrayList<>();
-            final List<StoreFileMetadata> different = new ArrayList<>();
-            final List<StoreFileMetadata> missing = new ArrayList<>();
+            final List<StoreFileMetadata> identical = new ArrayList<>();//完全一致文件
+            final List<StoreFileMetadata> different = new ArrayList<>();//存在，但是不一致文件
+            final List<StoreFileMetadata> missing = new ArrayList<>();//缺失文件
             final Map<String, List<StoreFileMetadata>> perSegment = new HashMap<>();
             final List<StoreFileMetadata> perCommitStoreFiles = new ArrayList<>();
 

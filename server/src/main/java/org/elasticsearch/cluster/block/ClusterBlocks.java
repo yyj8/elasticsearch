@@ -107,7 +107,6 @@ public class ClusterBlocks extends AbstractDiffable<ClusterBlocks> {
      */
     public boolean disableStatePersistence() {
         for (ClusterBlock clusterBlock : global) {//在没有阻塞操作以及增量同步的时候，这里的global是为空的
-            System.out.println(">>>>>>>>>>>>clusterBlock="+clusterBlock+", disableStatePersistence="+clusterBlock.disableStatePersistence());
             if (clusterBlock.disableStatePersistence()) {
                 return true;
             }

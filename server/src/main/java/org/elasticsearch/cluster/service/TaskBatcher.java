@@ -82,7 +82,8 @@ public abstract class TaskBatcher {
             }
             existingTasks.addAll(tasks);
         }
-
+        //这里提交的线程BatchedTask，提交完后，执行BatchedTask的run方法；
+        //这里是单个线程线程池(PrioritizedEsThreadPoolExecutor)，线程池的队列是PriorityBlockingQueue，默认队列容量11个；
         if (timeout != null) {
             threadExecutor.execute(firstTask, timeout, () -> onTimeoutInternal(tasks, timeout));
         } else {

@@ -158,7 +158,7 @@ public class ClusterApplierService extends AbstractLifecycleComponent implements
         }
 
         @Override
-        public void run() {
+        public void run() {//执行更新
             runTask(this);
         }
     }
@@ -376,7 +376,7 @@ public class ClusterApplierService extends AbstractLifecycleComponent implements
         return true;
     }
 
-    private void runTask(UpdateTask task) {
+    private void runTask(UpdateTask task) {//执行更新任务
         if (!lifecycle.started()) {
             logger.debug("processing [{}]: ignoring, cluster applier service not started", task.source);
             return;
@@ -440,7 +440,7 @@ public class ClusterApplierService extends AbstractLifecycleComponent implements
             }
         }
     }
-
+    //应用集群元数据变更
     private void applyChanges(UpdateTask task, ClusterState previousClusterState, ClusterState newClusterState, StopWatch stopWatch) {
         ClusterChangedEvent clusterChangedEvent = new ClusterChangedEvent(task.source, newClusterState, previousClusterState);
         // new cluster state, notify all listeners
@@ -504,7 +504,7 @@ public class ClusterApplierService extends AbstractLifecycleComponent implements
 
     private static void callClusterStateAppliers(ClusterChangedEvent clusterChangedEvent, StopWatch stopWatch,
                                                  Collection<ClusterStateApplier> clusterStateAppliers) {
-        for (ClusterStateApplier applier : clusterStateAppliers) {
+        for (ClusterStateApplier applier : clusterStateAppliers) {//应用集群状态
             logger.trace("calling [{}] with change to version [{}]", applier, clusterChangedEvent.state().version());
             try (Releasable ignored = stopWatch.timing("running applier [" + applier + "]")) {
                 applier.applyClusterState(clusterChangedEvent);

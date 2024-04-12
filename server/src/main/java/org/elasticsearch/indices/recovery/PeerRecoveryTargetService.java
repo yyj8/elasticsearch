@@ -80,6 +80,7 @@ import static org.elasticsearch.index.seqno.SequenceNumbers.UNASSIGNED_SEQ_NO;
  * <p>
  * Note, it can be safely assumed that there will only be a single recovery per shard (index+id) and
  * not several of them (since we don't allocate several shard replicas to the same node).
+ * 注意，可以安全地假设每个shard（索引+id）只有一个recovery，而不是几个（因为我们不会将同一个shard的多个副本分配给同一数据节点）
  */
 public class PeerRecoveryTargetService implements IndexEventListener {
 
@@ -215,7 +216,7 @@ public class PeerRecoveryTargetService implements IndexEventListener {
         RecoveryResponseHandler responseHandler = new RecoveryResponseHandler(startRequest, timer);
 
         try {
-            cancellableThreads.executeIO(() ->
+            cancellableThreads.executeIO(() ->//这里把同步请求发出去，向源节点发
                 // we still execute under cancelableThreads here to ensure we interrupt any blocking call to the network if any
                 // on the underlying transport. It's unclear if we need this here at all after moving to async execution but
                 // the issues that a missing call to this could cause are sneaky and hard to debug. If we don't need it on this
@@ -535,7 +536,7 @@ public class PeerRecoveryTargetService implements IndexEventListener {
         }
 
         @Override
-        public void doRun() {
+        public void doRun() {//在线程池中执行recovery逻辑
             doRecovery(recoveryId, startRecoveryRequest);
         }
     }

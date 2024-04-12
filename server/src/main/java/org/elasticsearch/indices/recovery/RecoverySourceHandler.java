@@ -465,6 +465,7 @@ public class RecoverySourceHandler {
      * Phase1 examines the segment files on the target node and copies over the
      * segments that are missing. Only segments that have the same size and
      * checksum can be reused
+     * 阶段1检查目标节点上的分段文件，并复制丢失的分段。只有具有相同大小和校验和的段才能重复使用
      */
     void phase1(IndexCommit snapshot, long startingSeqNo, IntSupplier translogOps, ActionListener<SendFileResult> listener) {
         cancellableThreads.checkForCancel();
@@ -500,8 +501,8 @@ public class RecoverySourceHandler {
                 // Generate a "diff" of all the identical, different, and missing
                 // segment files on the target node, using the existing files on
                 // the source node
-                final Store.RecoveryDiff diff = recoverySourceMetadata.recoveryDiff(request.metadataSnapshot());
-                for (StoreFileMetadata md : diff.identical) {
+                final Store.RecoveryDiff diff = recoverySourceMetadata.recoveryDiff(request.metadataSnapshot());//获取差异文件
+                for (StoreFileMetadata md : diff.identical) {//完全一致文件列表
                     phase1ExistingFileNames.add(md.name());
                     phase1ExistingFileSizes.add(md.length());
                     existingTotalSizeInBytes += md.length();
@@ -512,8 +513,8 @@ public class RecoverySourceHandler {
                     totalSizeInBytes += md.length();
                 }
                 List<StoreFileMetadata> phase1Files = new ArrayList<>(diff.different.size() + diff.missing.size());
-                phase1Files.addAll(diff.different);
-                phase1Files.addAll(diff.missing);
+                phase1Files.addAll(diff.different);//内容差异文件
+                phase1Files.addAll(diff.missing);//缺失文件
                 for (StoreFileMetadata md : phase1Files) {
                     if (request.metadataSnapshot().asMap().containsKey(md.name())) {
                         logger.trace("recovery [phase1]: recovering [{}], exists in local store, but is different: remote [{}], local [{}]",

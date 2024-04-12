@@ -300,7 +300,7 @@ public class PublicationTransportHandler {
                         }
                         if (serializedDiffs.containsKey(node.getVersion()) == false) {//下面的序列化会压缩数据
                             final BytesReference serializedDiff = serializeDiffClusterState(diff, node.getVersion());
-                            serializedDiffs.put(node.getVersion(), serializedDiff);
+                            serializedDiffs.put(node.getVersion(), serializedDiff);//增量元数据
                             logger.trace("serialized cluster state diff for version [{}] in for node version [{}] with size [{}]",
                                 newState.version(), node.getVersion(), serializedDiff.length());
                         }

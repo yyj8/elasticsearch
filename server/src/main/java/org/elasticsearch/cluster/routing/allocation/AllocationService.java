@@ -306,15 +306,17 @@ public class AllocationService {
      * Removes delay markers from unassigned shards based on current time stamp.
      */
     private void removeDelayMarkers(RoutingAllocation allocation) {
+        //获取未分配分片
         final RoutingNodes.UnassignedShards.UnassignedIterator unassignedIterator = allocation.routingNodes().unassigned().iterator();
+        //获取集群元数据
         final Metadata metadata = allocation.metadata();
-        while (unassignedIterator.hasNext()) {
+        while (unassignedIterator.hasNext()) {//遍历未分配分片
             ShardRouting shardRouting = unassignedIterator.next();
-            UnassignedInfo unassignedInfo = shardRouting.unassignedInfo();
-            if (unassignedInfo.isDelayed()) {
+            UnassignedInfo unassignedInfo = shardRouting.unassignedInfo();//未分配分片信息
+            if (unassignedInfo.isDelayed()) {//过滤，看看是否是设置的延时分配分片；即【index.unassigned.node_left.delayed_timeout】参数设置
                 final long newComputedLeftDelayNanos = unassignedInfo.getRemainingDelay(allocation.getCurrentNanoTime(),
-                    metadata.getIndexSafe(shardRouting.index()).getSettings());
-                if (newComputedLeftDelayNanos == 0) {
+                    metadata.getIndexSafe(shardRouting.index()).getSettings());//获取延时时间
+                if (newComputedLeftDelayNanos == 0) {//已经达到延时时间，也就是应该执行了
                     unassignedIterator.updateUnassigned(new UnassignedInfo(unassignedInfo.getReason(), unassignedInfo.getMessage(),
                         unassignedInfo.getFailure(), unassignedInfo.getNumFailedAllocations(), unassignedInfo.getUnassignedTimeInNanos(),
                         unassignedInfo.getUnassignedTimeInMillis(), false, unassignedInfo.getLastAllocationStatus(),
@@ -427,7 +429,7 @@ public class AllocationService {
             "auto-expand replicas out of sync with number of nodes in the cluster";
         assert assertInitialized();
 
-        removeDelayMarkers(allocation);
+        removeDelayMarkers(allocation);//判断是否到延时时间了，如果到了，把对应的未分配分片延时标记去掉
 
         allocateExistingUnassignedShards(allocation);  // try to allocate existing shard copies first
         shardsAllocator.allocate(allocation);
@@ -442,7 +444,7 @@ public class AllocationService {
         }
 
         final RoutingNodes.UnassignedShards.UnassignedIterator primaryIterator = allocation.routingNodes().unassigned().iterator();
-        while (primaryIterator.hasNext()) {
+        while (primaryIterator.hasNext()) {//分配主分片
             final ShardRouting shardRouting = primaryIterator.next();
             if (shardRouting.primary()) {
                 getAllocatorForShard(shardRouting, allocation).allocateUnassigned(shardRouting, allocation, primaryIterator);
@@ -454,7 +456,7 @@ public class AllocationService {
         }
 
         final RoutingNodes.UnassignedShards.UnassignedIterator replicaIterator = allocation.routingNodes().unassigned().iterator();
-        while (replicaIterator.hasNext()) {
+        while (replicaIterator.hasNext()) {//分配副本分片
             final ShardRouting shardRouting = replicaIterator.next();
             if (shardRouting.primary() == false) {
                 getAllocatorForShard(shardRouting, allocation).allocateUnassigned(shardRouting, allocation, replicaIterator);
@@ -469,7 +471,7 @@ public class AllocationService {
                 // its a live node, continue
                 continue;
             }
-            // now, go over all the shards routing on the node, and fail them
+            // now, go over all the shards routing on the node, and fail them,现在，检查节点上的所有碎片路由，并使其失败
             for (ShardRouting shardRouting : node.copyShards()) {
                 final IndexMetadata indexMetadata = allocation.metadata().getIndexSafe(shardRouting.index());
                 boolean delayed = INDEX_DELAYED_NODE_LEFT_TIMEOUT_SETTING.get(indexMetadata.getSettings()).nanos() > 0;
@@ -480,6 +482,7 @@ public class AllocationService {
             }
             // its a dead node, remove it, note, its important to remove it *after* we apply failed shard
             // since it relies on the fact that the RoutingNode exists in the list of nodes
+            //它是一个死节点，删除它，注意，在我们应用失败的碎片后删除它很重要，因为它依赖于RoutingNode存在于节点列表中这一事实
             it.remove();
         }
     }
