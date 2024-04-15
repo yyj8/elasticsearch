@@ -56,7 +56,7 @@ public final class RecoveryFileChunkRequest extends RecoveryTransportRequest {
         totalTranslogOps = in.readVInt();
         sourceThrottleTimeInNanos = in.readLong();
     }
-
+    //构造数据内容同步请求
     public RecoveryFileChunkRequest(long recoveryId, final long requestSeqNo, ShardId shardId, StoreFileMetadata metadata, long position,
                                     BytesReference content, boolean lastChunk, int totalTranslogOps, long sourceThrottleTimeInNanos) {
         super(requestSeqNo);

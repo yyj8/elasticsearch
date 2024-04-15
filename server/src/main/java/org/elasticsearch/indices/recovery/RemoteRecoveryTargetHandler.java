@@ -223,6 +223,8 @@ public class RemoteRecoveryTargetHandler implements RecoveryTargetHandler {
         /* we send estimateTotalOperations with every request since we collect stats on the target and that way we can
          * see how many translog ops we accumulate while copying files across the network. A future optimization
          * would be in to restart file copy again (new deltas) if we have too many translog ops are piling up.
+         * 我们在每个请求中都会发送estimateTotalOperations，因为我们收集了目标的统计数据，
+         * 这样我们就可以看到在网络上复制文件时积累了多少translog操作。如果我们积累了太多translog操作，未来的优化将是重新启动文件复制（新的增量）
          */
         final RecoveryFileChunkRequest request = new RecoveryFileChunkRequest(
             recoveryId, requestSeqNo, shardId, fileMetadata, position, content, lastChunk, totalTranslogOps, throttleTimeInNanos);

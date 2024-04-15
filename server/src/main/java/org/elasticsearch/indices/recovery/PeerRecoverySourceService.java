@@ -136,7 +136,7 @@ public class PeerRecoverySourceService extends AbstractLifecycleComponent implem
 
         final ShardRouting routingEntry = shard.routingEntry();
 
-        if (routingEntry.primary() == false || routingEntry.active() == false) {
+        if (routingEntry.primary() == false || routingEntry.active() == false) {//如果当前分片不是主分片，且不活跃，抛出异常
             throw new DelayRecoveryException("source shard [" + routingEntry + "] is not an active primary");
         }
 
@@ -146,10 +146,11 @@ public class PeerRecoverySourceService extends AbstractLifecycleComponent implem
                 request.shardId(), request.targetNode());
             throw new DelayRecoveryException("source shard is not marked yet as relocating to [" + request.targetNode() + "]");
         }
-
+        //添加恢复请求任务到recovery列表
         RecoverySourceHandler handler = ongoingRecoveries.addNewRecovery(request, shard);
         logger.trace("[{}][{}] starting recovery to {}", request.shardId().getIndex().getName(), request.shardId().id(),
             request.targetNode());
+        //执行恢复操作
         handler.recoverToTarget(ActionListener.runAfter(listener, () -> ongoingRecoveries.remove(shard, handler)));
     }
 
@@ -163,7 +164,7 @@ public class PeerRecoverySourceService extends AbstractLifecycleComponent implem
     }
 
     class StartRecoveryTransportRequestHandler implements TransportRequestHandler<StartRecoveryRequest> {
-        @Override
+        @Override//这里接收副本节点发过来的recovery分片请求
         public void messageReceived(final StartRecoveryRequest request, final TransportChannel channel, Task task) throws Exception {
             recover(request, new ChannelActionListener<>(channel, Actions.START_RECOVERY, request));
         }

@@ -92,7 +92,7 @@ public abstract class AsyncIOProcessor<Item> {
     private void drainAndProcessAndRelease(List<Tuple<Item, Consumer<Exception>>> candidates) {
         Exception exception;
         try {
-            queue.drainTo(candidates);
+            queue.drainTo(candidates);//从队列中取出需要同步项
             exception = processList(candidates);
         } finally {
             promiseSemaphore.release();

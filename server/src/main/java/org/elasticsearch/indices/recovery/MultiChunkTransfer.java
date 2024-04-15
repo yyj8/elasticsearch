@@ -55,6 +55,14 @@ import static org.elasticsearch.index.seqno.SequenceNumbers.UNASSIGNED_SEQ_NO;
  * greater than {@code maxConcurrentFileChunks}), the sending/requesting thread will abort its execution. That process will be resumed by
  * one of the networking threads which receive/handle the responses of the current pending file chunk requests. This process will continue
  * until all chunk requests are sent/responded.
+ * 文件块在任何时候最多由一个线程按顺序发送/请求。然而，发送方/请求方不会在处理下一个文件块请求之前等待响应，以减少恢复时间，尤其是在安全/压缩或高延迟通信中。
+ * 发送方/请求方最多可以发送maxConcurrentFileChunks文件块请求，而无需等待响应。由于恢复目标可能会无序地接收文件块，因此它必须在内存中缓冲这些文件块，
+ * * 并且只有在没有间隙时才刷新到磁盘。为了确保恢复目标的缓冲区永远不会超过maxConcurrentFileChunks文件块，
+ * * 我们允许发送方/请求方从最后一个刷新（和确认）的文件块中只发送最多maxConcurrentFile chunks的文件块请求。
+ * * 为此，我们利用本地检查点跟踪器。我们生成一个新的序列号，并在发送之前将其分配给每个文件块请求；然后当我们接收到对应文件块请求的响应时，
+ * * 将该序列号标记为已处理。使用本地检查点跟踪器，我们知道最后确认的刷新文件块是requestSeqId等于本地检查点的文件块，因为恢复目标可以将所有文件块刷新到本地检查点。
+ * 当未回复的文件块请求数量达到限制时（即，max_seq_no和本地检查点之间的间隙大于maxConcurrentFileChunks），
+ * * 发送/请求线程将中止其执行。该过程将由接收/处理当前挂起的文件块请求的响应的网络线程之一恢复。此过程将继续，直到发送/响应所有区块请求为止。
  */
 public abstract class MultiChunkTransfer<Source, Request extends MultiChunkTransfer.ChunkRequest> implements Closeable {
     private Status status = Status.PROCESSING;
@@ -120,6 +128,7 @@ public abstract class MultiChunkTransfer<Source, Request extends MultiChunkTrans
                     return;
                 }
                 final long requestSeqId = requestSeqIdTracker.generateSeqNo();
+                //request这个tuple的第一个元素是StoreFileMetadata，第二个元素是segment中读到的文件内容chunk块
                 executeChunkRequest(request.v2(), ActionListener.wrap(
                     r -> addItem(requestSeqId, request.v1(), null),
                     e -> addItem(requestSeqId, request.v1(), e)));
@@ -152,14 +161,14 @@ public abstract class MultiChunkTransfer<Source, Request extends MultiChunkTrans
         try {
             if (currentSource == null) {
                 if (remainingSources.hasNext()) {
-                    currentSource = remainingSources.next();
+                    currentSource = remainingSources.next();//获取下一个数据目录
                     onNewResource(currentSource);
                 } else {
                     return null;
                 }
             }
             final Source md = currentSource;
-            final Request request = nextChunkRequest(md);
+            final Request request = nextChunkRequest(md);//获取文件chunk
             if (request.lastChunk()) {
                 currentSource = null;
             }

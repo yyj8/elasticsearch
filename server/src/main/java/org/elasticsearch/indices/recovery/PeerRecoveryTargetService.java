@@ -449,7 +449,7 @@ public class PeerRecoveryTargetService implements IndexEventListener {
     class FileChunkTransportRequestHandler implements TransportRequestHandler<RecoveryFileChunkRequest> {
 
         // How many bytes we've copied since we last called RateLimiter.pause
-        final AtomicLong bytesSinceLastPause = new AtomicLong();
+        final AtomicLong bytesSinceLastPause = new AtomicLong();//上次暂停同步到现在已经同步了多少数据大小
 
         @Override
         public void messageReceived(final RecoveryFileChunkRequest request, TransportChannel channel, Task task) throws Exception {
@@ -475,7 +475,7 @@ public class PeerRecoveryTargetService implements IndexEventListener {
                         indexState.addTargetThrottling(throttleTimeInNanos);
                         recoveryTarget.indexShard().recoveryStats().addThrottleTime(throttleTimeInNanos);
                     }
-                }
+                }//写同步数据到本地文件，包括元数据等信息
                 recoveryTarget.writeFileChunk(request.metadata(), request.position(), request.content(), request.lastChunk(),
                     request.totalTranslogOps(), listener);
             }

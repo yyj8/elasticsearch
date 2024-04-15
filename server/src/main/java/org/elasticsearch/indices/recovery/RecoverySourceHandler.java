@@ -145,12 +145,13 @@ public class RecoverySourceHandler {
 
     /**
      * performs the recovery from the local engine to the target
+     * 执行恢复操作
      */
     public void recoverToTarget(ActionListener<RecoveryResponse> listener) {
         addListener(listener);
         final Closeable releaseResources = () -> IOUtils.close(resources);
         try {
-            cancellableThreads.setOnCancel((reason, beforeCancelEx) -> {
+            cancellableThreads.setOnCancel((reason, beforeCancelEx) -> {//设置取消恢复任务回调函数执行逻辑
                 final RuntimeException e;
                 if (shard.state() == IndexShardState.CLOSED) { // check if the shard got closed on us
                     e = new IndexShardClosedException(shard.shardId(), "shard is closed and recovery was canceled reason [" + reason + "]");
@@ -898,6 +899,7 @@ public class RecoverySourceHandler {
     }
 
     void sendFiles(Store store, StoreFileMetadata[] files, IntSupplier translogOps, ActionListener<Void> listener) {
+        //排序文件，目的是先发送最小文件进行同步
         ArrayUtil.timSort(files, Comparator.comparingLong(StoreFileMetadata::length)); // send smallest first
 
         final MultiChunkTransfer<StoreFileMetadata, FileChunk>multiFileSender = new MultiChunkTransfer<StoreFileMetadata, FileChunk>(
@@ -911,7 +913,17 @@ public class RecoverySourceHandler {
                 protected void onNewResource(StoreFileMetadata md) throws IOException {
                     offset = 0;
                     IOUtils.close(currentInput, () -> currentInput = null);
+                    //读取Lucene索引目录元数据文件，一个md代表一个segment文件，MD如下：
+                    /**
+                     * StoreFileMetadata=name [segments_7], length [313], checksum [4cit5o], writtenBy [8.7.0]
+                     * StoreFileMetadata=name [_0.si], length [374], checksum [1j5wrlv], writtenBy [8.7.0]
+                     * StoreFileMetadata=name [_0.cfe], length [479], checksum [1q173jy], writtenBy [8.7.0]
+                     * StoreFileMetadata=name [_2.si], length [374], checksum [1wegpud], writtenBy [8.7.0]
+                     * StoreFileMetadata=name [_2.cfe], length [479], checksum [1j8zebi], writtenBy [8.7.0]
+                     * StoreFileMetadata=name [_2_1.fnm], length [935], checksum [1imhk4t], writtenBy [8.7.0]
+                     */
                     final IndexInput indexInput = store.directory().openInput(md.name(), IOContext.READONCE);
+                    //创建segment文件输入流，读文件内容
                     currentInput = new InputStreamIndexInput(indexInput, md.length()) {
                         @Override
                         public void close() throws IOException {
@@ -933,10 +945,11 @@ public class RecoverySourceHandler {
                     assert Transports.assertNotTransportThread("read file chunk");
                     cancellableThreads.checkForCancel();
                     final byte[] buffer = acquireBuffer();
-                    final int bytesRead = currentInput.read(buffer);
+                    final int bytesRead = currentInput.read(buffer);//读取指定文件，放入缓存
                     if (bytesRead == -1) {
                         throw new CorruptIndexException("file truncated; length=" + md.length() + " offset=" + offset, md.name());
                     }
+                    System.out.println(">>>>>>>>>>>>sendFiles方法 nextChunkRequest内部回调函数 StoreFileMetadata="+md);
                     final boolean lastChunk = offset + bytesRead == md.length();
                     final FileChunk chunk = new FileChunk(md, new BytesArray(buffer, 0, bytesRead), offset, lastChunk,
                         () -> buffers.addFirst(buffer));
@@ -947,7 +960,7 @@ public class RecoverySourceHandler {
                 @Override
                 protected void executeChunkRequest(FileChunk request, ActionListener<Void> listener) {
                     cancellableThreads.checkForCancel();
-                    recoveryTarget.writeFileChunk(
+                    recoveryTarget.writeFileChunk(//把文件chunk发送给目标节点
                         request.md, request.position, request.content, request.lastChunk, translogOps.getAsInt(),
                         ActionListener.runBefore(listener, request::close));
                 }
