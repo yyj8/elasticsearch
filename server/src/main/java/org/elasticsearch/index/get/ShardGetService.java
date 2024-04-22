@@ -100,7 +100,7 @@ public final class ShardGetService extends AbstractIndexShardComponent {
         currentMetric.inc();
         try {
             long now = System.nanoTime();
-            GetResult getResult =
+            GetResult getResult =//这里执行完，就就可以拿到指定ID的文档
                 innerGet(type, id, gFields, realtime, version, versionType, ifSeqNo, ifPrimaryTerm, fetchSourceContext);
 
             if (getResult.isExists()) {
@@ -176,6 +176,7 @@ public final class ShardGetService extends AbstractIndexShardComponent {
 
         Engine.GetResult get = null;
         if (type != null) {
+            //设置term（字段名称：_id，字段值：这里的ID就是rest api里面传入的ES中的文档ID），执行完下面的get方法，已经拿到了Lucene中的docID
             Term uidTerm = new Term(IdFieldMapper.NAME, Uid.encodeId(id));
             get = indexShard.get(new Engine.Get(realtime, realtime, type, id, uidTerm)
                 .version(version).versionType(versionType).setIfSeqNo(ifSeqNo).setIfPrimaryTerm(ifPrimaryTerm));
@@ -225,12 +226,12 @@ public final class ShardGetService extends AbstractIndexShardComponent {
         FieldsVisitor fieldVisitor = buildFieldsVisitors(storedFields,
             forceSourceForComputingTranslogStoredFields ? FetchSourceContext.FETCH_SOURCE : fetchSourceContext);
         if (fieldVisitor != null) {
-            try {
+            try {//根据指定的docID搜索文档，然后把文档对应的数据写入FieldsVisitor的source字段
                 docIdAndVersion.reader.document(docIdAndVersion.docId, fieldVisitor);
             } catch (IOException e) {
                 throw new ElasticsearchException("Failed to get type [" + type + "] and id [" + id + "]", e);
             }
-            source = fieldVisitor.source();
+            source = fieldVisitor.source();//执行完这行后，已经从Lucene拿到文档数据
 
             // in case we read from translog, some extra steps are needed to make _source consistent and to load stored fields
             if (get.isFromTranslog()) {

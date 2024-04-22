@@ -413,7 +413,7 @@ public class Metadata implements Iterable<IndexMetadata>, Diffable<Metadata>, To
      * patterns in the types array. Empty types array, null or {"_all"} will be expanded to all types available for
      * the given indices. Only fields that match the provided field filter will be returned (default is a predicate
      * that always returns true, which can be overridden via plugins)
-     *
+     * 传入的索引列表，如果是具体的索引就获取具体的，如果是all就获取所有索引的mapping；http://localhost:9201/user1,user2/_mapping?local=true
      * @see MapperPlugin#getFieldFilter()
      *
      */
@@ -430,10 +430,10 @@ public class Metadata implements Iterable<IndexMetadata>, Diffable<Metadata>, To
         boolean isAllTypes = isAllTypes(types);
         ImmutableOpenMap.Builder<String, ImmutableOpenMap<String, MappingMetadata>> indexMapBuilder = ImmutableOpenMap.builder();
         Iterable<String> intersection = HppcMaps.intersection(ObjectHashSet.from(concreteIndices), indices.keys());
-        for (String index : intersection) {
+        for (String index : intersection) {//遍历所有传入需要获取mapping的索引列表
             IndexMetadata indexMetadata = indices.get(index);
             Predicate<String> fieldPredicate = fieldFilter.apply(index);
-            if (isAllTypes) {
+            if (isAllTypes) {//默认传入的types等于空，就代表所有类型，进入if逻辑
                 indexMapBuilder.put(index, filterFields(indexMetadata.getMappings(), fieldPredicate));
             } else {
                 ImmutableOpenMap.Builder<String, MappingMetadata> filteredMappings = ImmutableOpenMap.builder();

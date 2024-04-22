@@ -544,7 +544,7 @@ public class ShardStateAction {
             this.logger = logger;
         }
 
-        @Override
+        @Override//收到数据节点发送的节点上的分片启动请求
         public void messageReceived(StartedShardEntry request, TransportChannel channel, Task task) throws Exception {
             logger.debug("{} received shard started for [{}]", request.shardId, request);
             clusterService.submitStateUpdateTask(

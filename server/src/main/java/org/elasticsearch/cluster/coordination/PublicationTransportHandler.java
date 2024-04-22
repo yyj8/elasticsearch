@@ -193,9 +193,9 @@ public class PublicationTransportHandler {
                     try {
                         final Diff<ClusterState> diff;
                         // Close stream early to release resources used by the de-compression as early as possible
-                        try (StreamInput input = in) {
+                        try (StreamInput input = in) {//读取增量元数据
                             diff = ClusterState.readDiffFrom(input, lastSeen.nodes().getLocalNode());
-                        }
+                        }//把传入的增量元数据加入本地元数据，返回一个全集元数据
                         incomingState = diff.apply(lastSeen); // might throw IncompatibleClusterStateVersionException
                     } catch (IncompatibleClusterStateVersionException e) {
                         incompatibleClusterStateDiffReceivedCount.incrementAndGet();
@@ -208,7 +208,7 @@ public class PublicationTransportHandler {
                     logger.debug("received diff cluster state version [{}] with uuid [{}], diff size [{}]",
                         incomingState.version(), incomingState.stateUUID(), request.bytes().length());
                     final PublishWithJoinResponse response = acceptState(incomingState);
-                    lastSeenClusterState.compareAndSet(lastSeen, incomingState);
+                    lastSeenClusterState.compareAndSet(lastSeen, incomingState);//更新本地缓存元数据
                     return response;
                 }
             }

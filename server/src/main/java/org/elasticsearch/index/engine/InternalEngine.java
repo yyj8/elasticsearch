@@ -662,13 +662,13 @@ public class InternalEngine extends Engine {
         }
     }
 
-    @Override
+    @Override//根据ID获取文档
     public GetResult get(Get get, BiFunction<String, SearcherScope, Engine.Searcher> searcherFactory) throws EngineException {
         assert Objects.equals(get.uid().field(), IdFieldMapper.NAME) : get.uid().field();
         try (ReleasableLock ignored = readLock.acquire()) {
             ensureOpen();
             SearcherScope scope;
-            if (get.realtime()) {
+            if (get.realtime()) {//默认未true
                 VersionValue versionValue = null;
                 try (Releasable ignore = versionMap.acquireLock(get.uid().bytes())) {
                     // we need to lock here to access the version map to do this truly in RT
@@ -946,7 +946,7 @@ public class InternalEngine extends Engine {
                     assert index.seqNo() >= 0 : "ops should have an assigned seq no.; origin: " + index.origin();
 
                     if (plan.indexIntoLucene || plan.addStaleOpToLucene) {
-                        indexResult = indexIntoLucene(index, plan);
+                        indexResult = indexIntoLucene(index, plan);//把数据先写入Lucene缓存，写入Lucene缓存后，在后面的代码在写translog，因为写Lucene缓存复杂，失败概率更大
                     } else {
                         indexResult = new IndexResult(
                             plan.versionForIndexing, index.primaryTerm(), index.seqNo(), plan.currentNotFoundOrDeleted);
@@ -1113,10 +1113,10 @@ public class InternalEngine extends Engine {
         try {
             if (plan.addStaleOpToLucene) {
                 addStaleDocs(index.docs(), indexWriter);
-            } else if (plan.useLuceneUpdateDocument) {
+            } else if (plan.useLuceneUpdateDocument) {//如果文档存在，那就是更新文档，走这个分支
                 assert assertMaxSeqNoOfUpdatesIsAdvanced(index.uid(), index.seqNo(), true, true);
                 updateDocs(index.uid(), index.docs(), indexWriter);
-            } else {
+            } else {//如果文档不存在，就是新的文档，走这个分支
                 // document does not exists, we can optimize for create, but double check if assertions are running
                 assert assertDocDoesNotExist(index, canOptimizeAddDocument(index) == false);
                 addDocs(index.docs(), indexWriter);
@@ -1282,7 +1282,7 @@ public class InternalEngine extends Engine {
     }
 
     private void updateDocs(final Term uid, final List<ParseContext.Document> docs, final IndexWriter indexWriter) throws IOException {
-        if (softDeleteEnabled) {
+        if (softDeleteEnabled) {//软删除默认是true
             if (docs.size() > 1) {
                 indexWriter.softUpdateDocuments(uid, docs, softDeletesField);
             } else {

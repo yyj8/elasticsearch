@@ -96,7 +96,7 @@ public abstract class TransportMasterNodeAction<Request extends MasterNodeReques
      * Override this operation if access to the task parameter is needed
      */
     protected void masterOperation(Task task, Request request, ClusterState state, ActionListener<Response> listener) throws Exception {
-        masterOperation(request, state, listener);
+        masterOperation(request, state, listener);//这个在master和其他节点上都可能执行，主要看元数据请求是否有携带local参数
     }
 
     protected boolean localExecute(Request request) {
@@ -133,7 +133,7 @@ public abstract class TransportMasterNodeAction<Request extends MasterNodeReques
         protected void doStart(ClusterState clusterState) {
             try {
                 final DiscoveryNodes nodes = clusterState.nodes();
-                if (nodes.isLocalNodeElectedMaster() || localExecute(request)) {
+                if (nodes.isLocalNodeElectedMaster() || localExecute(request)) {//如果参数local=true，那么进入if循环，调用：TransportMasterNodeAction实现
                     // check for block, if blocked, retry, else, execute locally
                     final ClusterBlockException blockException = checkBlock(request, clusterState);
                     if (blockException != null) {
@@ -162,17 +162,17 @@ public abstract class TransportMasterNodeAction<Request extends MasterNodeReques
                                 delegatedListener.onFailure(t);
                             }
                         });
-                        threadPool.executor(executor)
+                        threadPool.executor(executor)//执行master相关操作，但是这里还是在客户端配置的节点上执行
                             .execute(ActionRunnable.wrap(delegate, l -> masterOperation(task, request, clusterState, l)));
                     }
-                } else {
+                } else {//元数据需要请求master，也就是请求携带的local=false
                     if (nodes.getMasterNode() == null) {
                         logger.debug("no known master node, scheduling a retry");
                         retryOnMasterChange(clusterState, null);
                     } else {
                         DiscoveryNode masterNode = nodes.getMasterNode();
                         final String actionName = getMasterActionName(masterNode);
-                        transportService.sendRequest(masterNode, actionName, request,
+                        transportService.sendRequest(masterNode, actionName, request,//发送亲戚到master节点
                             new ActionListenerResponseHandler<Response>(listener, TransportMasterNodeAction.this::read) {
                                 @Override
                                 public void handleException(final TransportException exp) {

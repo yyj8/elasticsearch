@@ -102,7 +102,7 @@ final class PerThreadIDVersionAndSeqNoLookup {
         throws IOException {
         assert context.reader().getCoreCacheHelper().getKey().equals(readerKey) :
             "context's reader is not the same as the reader class was initialized on.";
-        int docID = getDocID(id, context);
+        int docID = getDocID(id, context);//获取Lucene内部docID
 
         if (docID != DocIdSetIterator.NO_MORE_DOCS) {
             final long seqNo;
@@ -123,11 +123,12 @@ final class PerThreadIDVersionAndSeqNoLookup {
 
     /**
      * returns the internal lucene doc id for the given id bytes.
+     * 根据给的es的ID获取Lucene内部docID
      * {@link DocIdSetIterator#NO_MORE_DOCS} is returned if not found
      * */
     private int getDocID(BytesRef id, LeafReaderContext context) throws IOException {
-        // termsEnum can possibly be null here if this leaf contains only no-ops.
-        if (termsEnum != null && termsEnum.seekExact(id)) {
+        // termsEnum can possibly be null here if this leaf contains only no-ops.如果此叶仅包含不包含任何操作，termsNum在此可能为null。
+        if (termsEnum != null && termsEnum.seekExact(id)) {//注意
             final Bits liveDocs = context.reader().getLiveDocs();
             int docID = DocIdSetIterator.NO_MORE_DOCS;
             // there may be more than one matching docID, in the case of nested docs, so we want the last one:

@@ -582,7 +582,7 @@ public abstract class Engine implements Closeable {
                                                 SearcherScope scope) throws EngineException {
         final Engine.Searcher searcher = searcherFactory.apply("get", scope);
         final DocIdAndVersion docIdAndVersion;
-        try {
+        try {//获取docId和version，执行完下面这一行，就拿到了Lucene中的docID
             docIdAndVersion = VersionsAndSeqNoResolver.loadDocIdAndVersion(searcher.getIndexReader(), get.uid(), true);
         } catch (Exception e) {
             Releasables.closeWhileHandlingException(searcher);
@@ -1654,7 +1654,7 @@ public abstract class Engine implements Closeable {
             this.ifPrimaryTerm = primaryTerm;
             return this;
         }
-        
+
         public long getIfPrimaryTerm() {
             return ifPrimaryTerm;
         }

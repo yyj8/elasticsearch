@@ -451,7 +451,7 @@ public class PeerRecoveryTargetService implements IndexEventListener {
         // How many bytes we've copied since we last called RateLimiter.pause
         final AtomicLong bytesSinceLastPause = new AtomicLong();//上次暂停同步到现在已经同步了多少数据大小
 
-        @Override
+        @Override//接收来自主分片的同步请求，这里面携带了数据内容和元数据
         public void messageReceived(final RecoveryFileChunkRequest request, TransportChannel channel, Task task) throws Exception {
             try (RecoveryRef recoveryRef = onGoingRecoveries.getRecoverySafe(request.recoveryId(), request.shardId())) {
                 final RecoveryTarget recoveryTarget = recoveryRef.target();

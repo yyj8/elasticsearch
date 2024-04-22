@@ -229,6 +229,7 @@ public class RemoteRecoveryTargetHandler implements RecoveryTargetHandler {
         final RecoveryFileChunkRequest request = new RecoveryFileChunkRequest(
             recoveryId, requestSeqNo, shardId, fileMetadata, position, content, lastChunk, totalTranslogOps, throttleTimeInNanos);
         final Writeable.Reader<TransportResponse.Empty> reader = in -> TransportResponse.Empty.INSTANCE;
+        System.out.println("RemoteRecoveryTargetHandler中writeFileChunk方法 调用executeRetryableAction");
         executeRetryableAction(action, request, fileChunkRequestOptions, ActionListener.map(listener, r -> null), reader);
     }
 
@@ -258,7 +259,7 @@ public class RemoteRecoveryTargetHandler implements RecoveryTargetHandler {
         final RetryableAction<T> retryableAction = new RetryableAction<T>(logger, threadPool, initialDelay, timeout, removeListener) {
 
             @Override
-            public void tryAction(ActionListener<T> listener) {
+            public void tryAction(ActionListener<T> listener) {//把同步请求发送给副本分片所在节点
                 transportService.sendRequest(targetNode, action, request, options,
                     new ActionListenerResponseHandler<>(listener, reader, ThreadPool.Names.GENERIC));
             }

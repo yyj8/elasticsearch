@@ -57,7 +57,7 @@ public class TransportGetMappingsAction extends TransportClusterInfoAction<GetMa
         return new GetMappingsResponse(in);
     }
 
-    @Override
+    @Override//这个在master和其他节点上都可能执行，主要看元数据请求是否有携带local参数
     protected void doMasterOperation(final GetMappingsRequest request, String[] concreteIndices, final ClusterState state,
                                      final ActionListener<GetMappingsResponse> listener) {
         logger.trace("serving getMapping request based on version {}", state.version());

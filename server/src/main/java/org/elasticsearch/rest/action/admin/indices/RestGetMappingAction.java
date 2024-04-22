@@ -115,6 +115,7 @@ public class RestGetMappingAction extends BaseRestHandler {
         getMappingsRequest.indicesOptions(IndicesOptions.fromRequest(request, getMappingsRequest.indicesOptions()));
         final TimeValue timeout = request.paramAsTime("master_timeout", getMappingsRequest.masterNodeTimeout());
         getMappingsRequest.masterNodeTimeout(timeout);
+        //https://www.elastic.co/guide/en/elasticsearch/reference/7.10/indices-get-mapping.html，里面的local参数表示是否从本地获取mapping就返回，默认false，即从master获取
         getMappingsRequest.local(request.paramAsBoolean("local", getMappingsRequest.local()));
         return channel -> client.admin().indices().getMappings(getMappingsRequest, new RestActionListener<GetMappingsResponse>(channel) {
 
