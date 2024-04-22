@@ -196,7 +196,7 @@ public abstract class Publication {
             ", version=" + publishRequest.getAcceptedState().version() + '}';
     }
 
-    void logIncompleteNodes(Level level) {
+    void logIncompleteNodes(Level level) {//一直等待发布元数据超时或者失败
         final String message = publicationTargets.stream().filter(PublicationTarget::isActive).map(publicationTarget ->
             publicationTarget.getDiscoveryNode() + " [" + publicationTarget.getState() + "]").collect(Collectors.joining(", "));
         if (message.isEmpty() == false) {

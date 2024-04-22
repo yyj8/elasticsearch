@@ -637,12 +637,12 @@ public class MasterService extends AbstractLifecycleComponent {
                     countDown++;
                 }
             }
-            logger.trace("expecting {} acknowledgements for cluster_state update (version: {})", countDown, clusterStateVersion);
+            logger.info("expecting {} acknowledgements for cluster_state update (version: {})", countDown, clusterStateVersion);
             this.countDown = new CountDown(countDown + 1); // we also wait for onCommit to be called
         }
 
         @Override
-        public void onCommit(TimeValue commitTime) {
+        public void onCommit(TimeValue commitTime) {//更新任务提交的时候执行
             TimeValue ackTimeout = ackedTaskListener.ackTimeout();
             if (ackTimeout == null) {
                 ackTimeout = TimeValue.ZERO;
@@ -652,7 +652,7 @@ public class MasterService extends AbstractLifecycleComponent {
                 onTimeout();
             } else if (countDown.countDown()) {
                 finish();
-            } else {
+            } else {//设置定时任务，到超时时间调用：onTimeout函数
                 this.ackTimeoutCallback = threadPool.schedule(this::onTimeout, timeLeft, ThreadPool.Names.GENERIC);
                 // re-check if onNodeAck has not completed while we were scheduling the timeout
                 if (countDown.isCountedDown()) {
@@ -662,12 +662,12 @@ public class MasterService extends AbstractLifecycleComponent {
         }
 
         @Override
-        public void onNodeAck(DiscoveryNode node, @Nullable Exception e) {
+        public void onNodeAck(DiscoveryNode node, @Nullable Exception e) {//有节点更新完成的时候调用
             if (node.equals(masterNode) == false && ackedTaskListener.mustAck(node) == false) {
                 return;
             }
             if (e == null) {
-                logger.trace("ack received from node [{}], cluster_state update (version: {})", node, clusterStateVersion);
+                logger.info("ack received from node [{}], cluster_state update (version: {})", node, clusterStateVersion);
             } else {
                 this.lastFailure = e;
                 logger.debug(() -> new ParameterizedMessage(
@@ -679,17 +679,17 @@ public class MasterService extends AbstractLifecycleComponent {
             }
         }
 
-        private void finish() {
-            logger.trace("all expected nodes acknowledged cluster_state update (version: {})", clusterStateVersion);
+        private void finish() {//执行到这里，说明所有节点已经完成元数据更新
+            logger.info("all expected nodes acknowledged cluster_state update (version: {})", clusterStateVersion);
             if (ackTimeoutCallback != null) {
                 ackTimeoutCallback.cancel();
             }
             ackedTaskListener.onAllNodesAcked(lastFailure);
         }
 
-        public void onTimeout() {
+        public void onTimeout() {//说明有节点更新超时
             if (countDown.fastForward()) {
-                logger.trace("timeout waiting for acknowledgement for cluster_state update (version: {})", clusterStateVersion);
+                logger.info("timeout waiting for acknowledgement for cluster_state update (version: {})", clusterStateVersion);
                 ackedTaskListener.onAckTimeout();
             }
         }
